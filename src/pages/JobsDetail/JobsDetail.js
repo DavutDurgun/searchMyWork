@@ -1,24 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView, View, Text, ScrollView } from 'react-native';
 import RenderHtml from 'react-native-render-html';
-
 
 //style
 import styles from './JobsDetail.style';
 
-
 //components
 import Button from '../../components/Button';
 
+//Reducer
+import { useSelector, useDispatch } from 'react-redux';
 
 
 const JobsDetail = ({ route }) => {
+    const dispatch = useDispatch();
+    let jobsFavoriteList = useSelector(s => s.jobsFavoriteList);
     const { item } = route.params;
-    
-    const addFavoriteJob=()=>{
-        console.log('eklendi')
+
+
+
+    const addFavoriteJob = () => {
+        let arr = [];
+        if (jobsFavoriteList.length === 0) {
+            arr.push(item)
+        } else {
+            let find = jobsFavoriteList.find(data => data.id === item.id);
+            arr = jobsFavoriteList;
+
+            if (typeof find == 'undefined') {
+                arr.push(item)
+            }
+        }
+        dispatch({ type: 'SET_ADD_FAVORITE_JOBS', payload: { jobsFavoriteList: arr, } });
+        jobsFavoriteList = arr;
+
+        item.isFavorite = !item['isFavorite'];
     }
-    
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.inner_container}>
@@ -48,7 +66,8 @@ const JobsDetail = ({ route }) => {
                 </ScrollView>
                 <Button
                     text='Favorite Job'
-                    isFavorite={false}
+                    isVisibleIcon
+                    isFavorite={item.isFavorite}
                     onPress={addFavoriteJob}
                 />
             </View>

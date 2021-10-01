@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { SafeAreaView, View, Text, FlatList } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, View, FlatList } from 'react-native';
 
 //style
 import styles from './Jobs.style';
@@ -12,15 +12,17 @@ import JobsList from '../../components/Card/JobsList'
 //services
 import GeneralServices from '../../utils/services/GeneralServices';
 
+
 const Jobs = ({ navigation }) => {
     const { data, apiLoading, apiError, get } = GeneralServices();
+    let jobsList = [];
 
-    useEffect(() => {
-        get('https://www.themuse.com/api/public/jobs?page=5');
+    useEffect(async () => {
+        await get('https://www.themuse.com/api/public/jobs?page=5');
     }, []);
 
     const jobsListHandleClick = (item) => {
-        navigation.navigate('JobsDetailPage', { item, });
+        navigation.navigate('JobsDetailPage', { item });
     }
 
     const jobsListRender = ({ item }) => (
@@ -41,12 +43,21 @@ const Jobs = ({ navigation }) => {
     if (apiError)
         return <Error />
 
+    if (data) {
+        if (data.status === 'Error') {
+            Alert.alert('Jobs', data.msg);
+        } else if (data['results']) {
+            jobsList = data['results'];
+        }
+    }
+
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.inner_container}>
                 <FlatList
+                    data={jobsList}
                     style={styles.flatList}
-                    data={data !== null ? (data['results'] || []) : []}
                     renderItem={jobsListRender}
                     keyExtractor={jobsKeyExtractor}
                 />
